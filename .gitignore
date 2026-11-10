@@ -1,0 +1,12 @@
+.venv/
+scraper/.venv/
+__pycache__/
+*.pyc
+.playwright/
+node_modules/
+.DS_Store
+.env
+*.log
+scraper/.cache/
+tour-raw.json
+tour.json

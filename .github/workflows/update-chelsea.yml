@@ -1,0 +1,105 @@
+name: Update Chelsea tour
+
+on:
+  schedule:
+    # Overlapping crons — GitHub often skips schedules; offsets raise hit rate
+    - cron: "0,15,30,45 * * * *"
+    - cron: "5,20,35,50 * * * *"
+    - cron: "10,25,40,55 * * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [chelsea-update]
+
+concurrency:
+  group: chelsea-tour-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('scraper/requirements.txt') }}
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r scraper/requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Fetch Chelsea duel
+        env:
+          TEAM: Chelsea
+          LEAGUE: Liga Surpresa
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3; do
+            echo "Fetch attempt $attempt"
+            if python scraper/fetch_chelsea.py -o chelsea-tour.json; then
+              ok=1
+              break
+            fi
+            sleep $((attempt * 8))
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "All Fantasy fetch attempts failed"
+            exit 1
+          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("chelsea-tour.json").read_text())
+          print(
+              "tour=", data.get("tour"),
+              "vs=", data.get("opponent"),
+              "score=", data.get("score"),
+              "diffs=", len(data.get("diff_matches") or []),
+              "pending=", data.get("pending_diffs"),
+          )
+          PY
+
+      - name: Commit chelsea-tour.json
+        run: |
+          set -euo pipefail
+          git config user.name "fantasy-bot"
+          git config user.email "fantasy-bot@users.noreply.github.com"
+          git add chelsea-tour.json
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "chore: refresh Chelsea tour status"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push failed (attempt $attempt), rebasing..."
+            git pull --rebase origin main
+            sleep 2
+          done
+          exit 1
+
+      - name: Purge jsDelivr cache
+        if: success()
+        continue-on-error: true
+        run: |
+          curl -fsS "https://purge.jsdelivr.net/gh/93zamogo-dotcom/fantasy-chelsea-widget@main/chelsea-tour.json" || true
