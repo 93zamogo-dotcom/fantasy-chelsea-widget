@@ -1,4 +1,4 @@
-// Fantasy Prediction — Chelsea (Liga Surpresa) Scriptable widget
+// Fantasy Chelsea widget (Large)
 const REPO = "93zamogo-dotcom/fantasy-chelsea-widget"
 const WIDGET_TITLE = "Chelsea"
 const REFRESH_URL = "scriptable:///run?scriptName=" + encodeURIComponent(Script.name())
@@ -10,14 +10,6 @@ function decodeBase64(b64) {
     throw new Error("base64 decode failed")
   }
   return data.toRawString()
-}
-
-function looksValid(data) {
-  if (!data) return false
-  if (data.tour != null) return true
-  if (data.opponent) return true
-  if (data.matches && data.matches.length) return true
-  return false
 }
 
 async function fetchStatus() {
@@ -46,33 +38,12 @@ async function fetchStatus() {
     ) {
       data = JSON.parse(decodeBase64(payload.content))
     }
-    if (looksValid(data)) {
+    if (data && (data.tour != null || data.opponent || data.matches)) {
       return data
     }
     errors.push("api: empty")
   } catch (e) {
     errors.push("api: " + e)
-  }
-
-  try {
-    const cdnUrl =
-      "https://cdn.jsdelivr.net/gh/" +
-      REPO +
-      "@main/chelsea-tour.json?t=" +
-      stamp
-    const req = new Request(cdnUrl)
-    req.timeoutInterval = 20
-    req.headers = {
-      "Cache-Control": "no-cache",
-      "User-Agent": "Scriptable-FantasyChelsea"
-    }
-    const data = await req.loadJSON()
-    if (looksValid(data)) {
-      return data
-    }
-    errors.push("jsdelivr: empty")
-  } catch (e) {
-    errors.push("jsdelivr: " + e)
   }
 
   try {
@@ -88,7 +59,7 @@ async function fetchStatus() {
       "User-Agent": "Scriptable-FantasyChelsea"
     }
     const data = await req.loadJSON()
-    if (looksValid(data)) {
+    if (data && (data.tour != null || data.opponent || data.matches)) {
       return data
     }
     errors.push("raw: empty")
@@ -102,25 +73,24 @@ async function fetchStatus() {
 function fmtAge(updatedAt) {
   if (!updatedAt) return ""
   const age = Math.max(0, Math.round(Date.now() / 1000 - Number(updatedAt)))
-  if (age < 60) return age + "c"
+  if (age < 60) return age + "s"
   if (age < 3600) return Math.round(age / 60) + "m"
   return Math.round(age / 3600) + "h"
 }
 
-function shortMatch(m) {
-  let h = m.home || ""
-  let a = m.away || ""
-  h = h.replace(/\s+FC$/i, "").replace(/\s+CF$/i, "")
-  a = a.replace(/\s+FC$/i, "").replace(/\s+CF$/i, "")
-  if (h.length > 10) h = h.slice(0, 9) + "..."
-  if (a.length > 10) a = a.slice(0, 9) + "..."
-  return h + "-" + a
+function shortName(name) {
+  let s = String(name || "")
+  if (s.length > 12) s = s.slice(0, 11) + "."
+  return s
 }
 
-function statusLabel(m) {
-  if (m.score) return m.score
-  if (m.result && m.result !== "?" && m.result !== "-") return m.result
-  if (m.time) return m.time
+function matchLabel(m) {
+  return shortName(m.home) + " v " + shortName(m.away)
+}
+
+function resultLabel(m) {
+  if (m.score) return String(m.score)
+  if (m.time) return String(m.time)
   return "..."
 }
 
@@ -137,69 +107,91 @@ function addRefreshButton(parent) {
   label.textColor = new Color("#F0C040")
 }
 
-function addHeader(widget, title, rightText) {
-  const header = widget.addStack()
-  header.layoutHorizontally()
-  header.centerAlignContent()
-  const t = header.addText(title)
-  t.font = Font.boldSystemFont(12)
-  t.textColor = new Color("#F0C040")
-  header.addSpacer()
-  if (rightText) {
-    const r = header.addText(rightText)
-    r.font = Font.systemFont(11)
-    r.textColor = new Color("#94A3B8")
-    header.addSpacer(6)
-  }
-  addRefreshButton(header)
-}
+function addDiffRow(widget, m) {
+  const line = widget.addStack()
+  line.layoutHorizontally()
+  line.centerAlignContent()
+  line.setPadding(2, 0, 2, 0)
 
-function addDiffRow(widget, m, compact) {
-  const row = widget.addStack()
-  row.layoutHorizontally()
-  row.centerAlignContent()
-  row.setPadding(2, 0, 2, 0)
-
-  const my = row.addText(m.my || "-")
-  my.font = Font.boldSystemFont(compact ? 12 : 13)
+  const my = line.addText(String(m.my || "?"))
+  my.font = Font.boldSystemFont(14)
   my.textColor = new Color("#F0C040")
-  my.monospacedDigit = true
 
-  row.addSpacer(6)
-  const name = row.addText(shortMatch(m))
-  name.font = Font.systemFont(compact ? 11 : 12)
+  line.addSpacer(8)
+  const name = line.addText(matchLabel(m))
+  name.font = Font.systemFont(12)
   name.textColor = Color.white()
   name.lineLimit = 1
-  name.minimumScaleFactor = 0.7
-  row.addSpacer()
+  name.minimumScaleFactor = 0.6
+  line.addSpacer()
 
-  const opp = row.addText(m.opp || "-")
-  opp.font = Font.boldSystemFont(compact ? 12 : 13)
-  opp.textColor = new Color("#7DD3FC")
-  opp.monospacedDigit = true
+  const their = line.addText(String(m.opp || "?"))
+  their.font = Font.boldSystemFont(14)
+  their.textColor = new Color("#7DD3FC")
 
-  row.addSpacer(8)
-  const st = row.addText(statusLabel(m))
-  st.font = Font.systemFont(10)
+  line.addSpacer(8)
+  const st = line.addText(resultLabel(m))
+  st.font = Font.systemFont(11)
   st.textColor = m.pending ? new Color("#FBBF24") : new Color("#94A3B8")
   st.lineLimit = 1
-  st.minimumScaleFactor = 0.6
+}
+
+function addAllRow(widget, m) {
+  const line = widget.addStack()
+  line.layoutHorizontally()
+  line.centerAlignContent()
+  line.setPadding(1, 0, 1, 0)
+
+  const mark = line.addText(m.diff ? "*" : ".")
+  mark.font = Font.systemFont(11)
+  mark.textColor = m.diff ? new Color("#F0C040") : new Color("#334155")
+  line.addSpacer(4)
+
+  const preds = line.addText(String(m.my || "?") + "/" + String(m.opp || "?"))
+  preds.font = Font.semiboldSystemFont(12)
+  preds.textColor = m.diff ? Color.white() : new Color("#94A3B8")
+  line.addSpacer(8)
+
+  const name = line.addText(matchLabel(m))
+  name.font = Font.systemFont(11)
+  name.textColor = new Color("#CBD5E1")
+  name.lineLimit = 1
+  name.minimumScaleFactor = 0.6
+  line.addSpacer()
+
+  const st = line.addText(resultLabel(m))
+  st.font = Font.systemFont(10)
+  st.textColor = new Color("#64748B")
 }
 
 async function createWidget(data, errorText) {
   const widget = new ListWidget()
   widget.setPadding(12, 14, 12, 14)
   widget.backgroundColor = new Color("#060E1C")
-  const size = config.widgetFamily || "medium"
+
+  const header = widget.addStack()
+  header.layoutHorizontally()
+  header.centerAlignContent()
+  const title = header.addText(WIDGET_TITLE)
+  title.font = Font.boldSystemFont(12)
+  title.textColor = new Color("#F0C040")
+  header.addSpacer()
+  if (data && data.tour != null) {
+    const tour = header.addText("Tour " + data.tour)
+    tour.font = Font.systemFont(11)
+    tour.textColor = new Color("#94A3B8")
+    header.addSpacer(6)
+  }
+  addRefreshButton(header)
+
+  widget.addSpacer(6)
 
   if (errorText) {
-    addHeader(widget, WIDGET_TITLE, "")
-    widget.addSpacer(8)
     const err = widget.addText(String(errorText))
     err.font = Font.systemFont(12)
     err.textColor = new Color("#FF6B6B")
     err.minimumScaleFactor = 0.6
-    err.lineLimit = 6
+    err.lineLimit = 8
     widget.addSpacer()
     const hint = widget.addText("Tap Upd")
     hint.font = Font.systemFont(11)
@@ -208,29 +200,23 @@ async function createWidget(data, errorText) {
     return widget
   }
 
-  const tourLabel = data.tour != null ? "Tour " + data.tour : ""
-  addHeader(widget, WIDGET_TITLE, tourLabel)
-  widget.addSpacer(6)
-
-  const vs = widget.addStack()
-  vs.layoutHorizontally()
-  vs.centerAlignContent()
-  const oppName = vs.addText("vs " + (data.opponent || "?"))
-  oppName.font = Font.semiboldSystemFont(size === "small" ? 14 : 15)
-  oppName.textColor = Color.white()
-  oppName.lineLimit = 1
-  oppName.minimumScaleFactor = 0.7
-  vs.addSpacer()
-  const score = vs.addText(data.score || "-:-")
-  score.font = Font.boldSystemFont(22)
+  const row = widget.addStack()
+  row.centerAlignContent()
+  const opp = row.addText("vs " + (data.opponent || "?"))
+  opp.font = Font.semiboldSystemFont(15)
+  opp.textColor = Color.white()
+  opp.lineLimit = 1
+  opp.minimumScaleFactor = 0.6
+  row.addSpacer()
+  const score = row.addText(String(data.score || "0:0"))
+  score.font = Font.boldSystemFont(24)
   score.textColor = new Color("#F0C040")
-  score.monospacedDigit = true
 
+  const diffs = data.diff_matches || []
   const meta = widget.addStack()
   meta.layoutHorizontally()
   meta.centerAlignContent()
   const pending = Number(data.pending_diffs || 0)
-  const diffs = data.diff_matches || []
   if (pending > 0) {
     const live = meta.addText("LIVE " + pending)
     live.font = Font.semiboldSystemFont(11)
@@ -245,74 +231,43 @@ async function createWidget(data, errorText) {
   age.font = Font.systemFont(10)
   age.textColor = new Color("#64748B")
 
-  if (size === "small") {
-    widget.refreshAfterDate = new Date(Date.now() + 5 * 60 * 1000)
-    return widget
-  }
-
   widget.addSpacer(8)
   const legend = widget.addStack()
-  const l1 = legend.addText("Me")
-  l1.font = Font.systemFont(10)
-  l1.textColor = new Color("#F0C040")
-  legend.addSpacer(10)
-  const l2 = legend.addText("Opp")
-  l2.font = Font.systemFont(10)
-  l2.textColor = new Color("#7DD3FC")
+  const me = legend.addText("Me")
+  me.font = Font.systemFont(10)
+  me.textColor = new Color("#F0C040")
+  legend.addSpacer(8)
+  const oppL = legend.addText("Opp")
+  oppL.font = Font.systemFont(10)
+  oppL.textColor = new Color("#7DD3FC")
   legend.addSpacer()
-  const l3 = legend.addText("diffs only")
-  l3.font = Font.systemFont(10)
-  l3.textColor = new Color("#64748B")
+  const only = legend.addText("diffs")
+  only.font = Font.systemFont(10)
+  only.textColor = new Color("#64748B")
 
   widget.addSpacer(4)
-  const limit = size === "large" ? 12 : 6
   if (!diffs.length) {
-    const empty = widget.addText("No differing tips")
+    const empty = widget.addText("No diffs")
     empty.font = Font.systemFont(12)
     empty.textColor = new Color("#64748B")
   } else {
-    for (let i = 0; i < diffs.length && i < limit; i++) {
-      addDiffRow(widget, diffs[i], size !== "large")
-    }
-    if (diffs.length > limit) {
-      const more = widget.addText("+" + (diffs.length - limit) + " more")
-      more.font = Font.systemFont(10)
-      more.textColor = new Color("#64748B")
+    for (let i = 0; i < diffs.length && i < 8; i++) {
+      addDiffRow(widget, diffs[i])
     }
   }
 
-  if (size === "large") {
-    widget.addSpacer(8)
-    const allTitle = widget.addText("All tips")
-    allTitle.font = Font.semiboldSystemFont(11)
-    allTitle.textColor = new Color("#94A3B8")
-    const all = data.matches || []
-    let shown = 0
-    for (let i = 0; i < all.length && shown < 10; i++) {
-      const m = all[i]
-      if (!m.active) continue
-      shown++
-      const row = widget.addStack()
-      row.layoutHorizontally()
-      row.centerAlignContent()
-      const mark = row.addText(m.diff ? "*" : ".")
-      mark.font = Font.systemFont(10)
-      mark.textColor = m.diff ? new Color("#F0C040") : new Color("#334155")
-      row.addSpacer(4)
-      const my = row.addText((m.my || "-") + "/" + (m.opp || "-"))
-      my.font = Font.semiboldSystemFont(11)
-      my.textColor = m.diff ? Color.white() : new Color("#94A3B8")
-      row.addSpacer(6)
-      const nm = row.addText(shortMatch(m))
-      nm.font = Font.systemFont(11)
-      nm.textColor = new Color("#CBD5E1")
-      nm.lineLimit = 1
-      nm.minimumScaleFactor = 0.6
-      row.addSpacer()
-      const st = row.addText(statusLabel(m))
-      st.font = Font.systemFont(10)
-      st.textColor = new Color("#64748B")
-    }
+  widget.addSpacer(8)
+  const allTitle = widget.addText("All tips")
+  allTitle.font = Font.semiboldSystemFont(11)
+  allTitle.textColor = new Color("#94A3B8")
+
+  const all = data.matches || []
+  let shown = 0
+  for (let i = 0; i < all.length && shown < 10; i++) {
+    const m = all[i]
+    if (!m.active) continue
+    shown = shown + 1
+    addAllRow(widget, m)
   }
 
   widget.refreshAfterDate = new Date(Date.now() + 5 * 60 * 1000)
@@ -329,6 +284,6 @@ try {
 
 Script.setWidget(widget)
 if (!config.runsInWidget) {
-  await widget.presentMedium()
+  await widget.presentLarge()
 }
 Script.complete()
