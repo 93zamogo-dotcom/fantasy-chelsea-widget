@@ -2,8 +2,8 @@
   "tour": 30,
   "team": "Chelsea",
   "league": "Liga Surpresa",
-  "updated_at": 1795271955.453638,
-  "updated_at_iso": "2026-11-21T14:39:15Z",
+  "updated_at": 1795273684.08226,
+  "updated_at_iso": "2026-11-21T15:08:04Z",
   "source": "fantasy-prediction",
   "opponent": "Zorya",
   "side": "home",
@@ -19,14 +19,14 @@
       "home": "Deportivo Alavés",
       "away": "Deportivo La Coruña",
       "time": "15:00",
-      "result": "?",
-      "score": null,
+      "result": "1",
+      "score": "3:1",
       "my": "1",
       "opp": "1",
       "diff": false,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 1,
