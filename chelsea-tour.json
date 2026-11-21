@@ -2,15 +2,15 @@
   "tour": 30,
   "team": "Chelsea",
   "league": "Liga Surpresa",
-  "updated_at": 1795297578.086452,
-  "updated_at_iso": "2026-11-21T21:46:18Z",
+  "updated_at": 1795299868.771531,
+  "updated_at_iso": "2026-11-21T22:24:28Z",
   "source": "fantasy-prediction",
   "opponent": "Zorya",
   "side": "home",
   "home": "Chelsea",
   "away": "Zorya",
-  "score": "2:0",
-  "pending_diffs": 1,
+  "score": "3:0",
+  "pending_diffs": 0,
   "has_my_ticket": true,
   "has_opp_ticket": true,
   "matches": [
@@ -145,14 +145,14 @@
       "home": "FC Groningen",
       "away": "SC Heerenveen",
       "time": "22:00",
-      "result": "?",
-      "score": null,
+      "result": "2",
+      "score": "1:3",
       "my": "2",
       "opp": "X",
       "diff": true,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 10,
@@ -287,14 +287,14 @@
       "home": "FC Groningen",
       "away": "SC Heerenveen",
       "time": "22:00",
-      "result": "?",
-      "score": null,
+      "result": "2",
+      "score": "1:3",
       "my": "2",
       "opp": "X",
       "diff": true,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     }
   ]
 }
