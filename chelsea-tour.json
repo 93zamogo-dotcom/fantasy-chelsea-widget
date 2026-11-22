@@ -2,8 +2,8 @@
   "tour": 31,
   "team": "Chelsea",
   "league": "Liga Surpresa",
-  "updated_at": 1795371267.56695,
-  "updated_at_iso": "2026-11-22T18:14:27Z",
+  "updated_at": 1795373298.281554,
+  "updated_at_iso": "2026-11-22T18:48:18Z",
   "source": "fantasy-prediction",
   "opponent": "St. Pauli",
   "side": "away",
@@ -103,14 +103,14 @@
       "home": "FC Lorient",
       "away": "Stade Rennais",
       "time": "18:15",
-      "result": "?",
-      "score": null,
+      "result": "X",
+      "score": "1:1",
       "my": "2",
       "opp": "2",
       "diff": false,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 7,
