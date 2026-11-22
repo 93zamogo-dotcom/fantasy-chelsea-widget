@@ -2,15 +2,15 @@
   "tour": 31,
   "team": "Chelsea",
   "league": "Liga Surpresa",
-  "updated_at": 1795366191.159322,
-  "updated_at_iso": "2026-11-22T16:49:51Z",
+  "updated_at": 1795368070.704652,
+  "updated_at_iso": "2026-11-22T17:21:10Z",
   "source": "fantasy-prediction",
   "opponent": "St. Pauli",
   "side": "away",
   "home": "St. Pauli",
   "away": "Chelsea",
   "score": "0:1",
-  "pending_diffs": 1,
+  "pending_diffs": 0,
   "has_my_ticket": true,
   "has_opp_ticket": true,
   "matches": [
@@ -75,28 +75,28 @@
       "home": "Panetolikos",
       "away": "Volos NFC",
       "time": "17:00",
-      "result": "?",
-      "score": null,
+      "result": "1",
+      "score": "1:0",
       "my": "1",
       "opp": "1",
       "diff": false,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 5,
       "home": "Racing de Santander",
       "away": "Real Sociedad",
       "time": "17:15",
-      "result": "?",
-      "score": null,
+      "result": "1",
+      "score": "3:2",
       "my": "X",
       "opp": "2",
       "diff": true,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 6,
@@ -259,14 +259,14 @@
       "home": "Racing de Santander",
       "away": "Real Sociedad",
       "time": "17:15",
-      "result": "?",
-      "score": null,
+      "result": "1",
+      "score": "3:2",
       "my": "X",
       "opp": "2",
       "diff": true,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     }
   ]
 }
