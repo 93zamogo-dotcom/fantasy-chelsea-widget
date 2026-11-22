@@ -2,8 +2,8 @@
   "tour": 31,
   "team": "Chelsea",
   "league": "Liga Surpresa",
-  "updated_at": 1795357618.44655,
-  "updated_at_iso": "2026-11-22T14:26:58Z",
+  "updated_at": 1795359987.444046,
+  "updated_at_iso": "2026-11-22T15:06:27Z",
   "source": "fantasy-prediction",
   "opponent": "St. Pauli",
   "side": "away",
@@ -19,14 +19,14 @@
       "home": "SK Beveren",
       "away": "KAA Gent",
       "time": "14:30",
-      "result": "?",
-      "score": null,
+      "result": "1",
+      "score": "1:0",
       "my": "2",
       "opp": "2",
       "diff": false,
       "active": true,
       "reserve": false,
-      "pending": true
+      "pending": false
     },
     {
       "i": 1,
